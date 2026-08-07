@@ -1,0 +1,219 @@
+{% extends "base.html" %}
+{% block title %}Statistics{% endblock %}
+{% block n3 %}active{% endblock %}
+{% block content %}
+
+<div class="section-title">Responders vs Non-Responders</div>
+
+<!-- Filter panel -->
+<div class="card mb-3">
+  <div class="card-header">
+    Analysis Filters
+    <span class="ms-2" style="font-size:11px;color:var(--muted);font-weight:400;">
+      Select filters then click Run Analysis
+    </span>
+  </div>
+  <div class="card-body">
+    <div class="row g-3 mb-3">
+      <div class="col-md-2">
+        <div class="form-label">Condition</div>
+        <div id="w-conditions" class="d-flex flex-wrap gap-1"></div>
+      </div>
+      <div class="col-md-2">
+        <div class="form-label">Treatment</div>
+        <div id="w-treatments" class="d-flex flex-wrap gap-1"></div>
+      </div>
+      <div class="col-md-2">
+        <div class="form-label">Sample Type</div>
+        <div id="w-sample-types" class="d-flex flex-wrap gap-1"></div>
+      </div>
+      <div class="col-md-2">
+        <div class="form-label">Timepoint (days)</div>
+        <div id="w-timepoints" class="d-flex flex-wrap gap-1"></div>
+      </div>
+      <div class="col-md-2">
+        <div class="form-label">Sex</div>
+        <div id="w-sexes" class="d-flex flex-wrap gap-1"></div>
+      </div>
+      <div class="col-md-2 d-flex align-items-end gap-2">
+        <button id="btn-run" class="btn btn-teiko btn-sm flex-grow-1">Run Analysis</button>
+        <button id="btn-reset" class="btn btn-outline-teiko btn-sm">Reset</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Subject counts -->
+<div id="sample-summary" class="d-none mb-3">
+  <div class="row g-2">
+    <div class="col-auto">
+      <div class="card px-4 py-2 d-flex flex-row align-items-center gap-3">
+        <div style="width:10px;height:10px;border-radius:50%;background:#2196F3;"></div>
+        <div>
+          <div style="font-size:18px;font-weight:700;color:#2196F3;" id="n-resp">—</div>
+          <div style="font-size:11px;color:var(--muted);">Responders</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-auto">
+      <div class="card px-4 py-2 d-flex flex-row align-items-center gap-3">
+        <div style="width:10px;height:10px;border-radius:50%;background:var(--red);"></div>
+        <div>
+          <div style="font-size:18px;font-weight:700;color:var(--red);" id="n-nonresp">—</div>
+          <div style="font-size:11px;color:var(--muted);">Non-Responders</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Warning -->
+<div id="warning-banner" class="warning-banner mb-3 d-none"></div>
+
+<!-- Stats table -->
+<div class="card mb-4 d-none" id="stats-card">
+  <div class="card-header">
+    Statistical Results
+    <span class="ms-2 px-2 py-1 rounded"
+          style="background:var(--red-lt);color:var(--red);font-size:10px;">FDR · Primary</span>
+    <span class="ms-1 px-2 py-1 rounded"
+          style="background:#F0F0F6;color:#555566;font-size:10px;">Bonferroni · Conservative</span>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-sm table-hover mb-0">
+        <thead>
+          <tr>
+            <th>Timepoint</th>
+            <th>Population</th>
+            <th>N Resp.</th>
+            <th>N Non-Resp.</th>
+            <th>Median Resp.</th>
+            <th>Median Non-Resp.</th>
+            <th>Mean Resp. (count · %)</th>
+            <th>Mean Non-Resp. (count · %)</th>
+            <th title="Rank-biserial correlation. |r|&lt;0.1 negligible · 0.1-0.3 small · 0.3-0.5 medium · &gt;0.5 large">Effect Size (r) ⓘ</th>
+            <th>Raw p</th>
+            <th>FDR p</th>
+            <th>FDR Sig.</th>
+            <th>Bonferroni p</th>
+            <th>Bonf. Sig.</th>
+          </tr>
+        </thead>
+        <tbody id="stats-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Figure -->
+<div class="card d-none" id="figure-card">
+  <div class="card-header">
+    Boxplots
+    <span style="font-size:11px;color:var(--muted);font-weight:400;margin-left:10px;">
+      * p&lt;0.05 &nbsp; ** p&lt;0.01 &nbsp; *** p&lt;0.001 &nbsp; (FDR corrected)
+    </span>
+  </div>
+  <div class="card-body text-center" style="background:#FAFAFC;">
+    <img id="boxplot-img" src="" class="img-fluid" style="max-width:100%;" alt="Boxplot">
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function buildWidget(id, vals) {
+  const c = document.getElementById(id);
+  c.innerHTML = "";
+  vals.forEach(v => {
+    const b = document.createElement("button");
+    b.className = "btn btn-outline-teiko btn-sm";
+    b.textContent = v; b.dataset.value = v;
+    b.addEventListener("click", function() {
+      this.classList.toggle("active-filter");
+    });
+    c.appendChild(b);
+  });
+}
+function getSelected(id) {
+  return Array.from(document.querySelectorAll(`#${id} .active-filter`))
+    .map(b => b.dataset.value);
+}
+function stars(p) {
+  if (p < 0.001) return '<span class="sig-star">***</span>';
+  if (p < 0.01)  return '<span class="sig-star">**</span>';
+  if (p < 0.05)  return '<span class="sig-star">*</span>';
+  return '<span class="sig-ns">ns</span>';
+}
+
+$(function() {
+  $.getJSON("/api/filter-options/", function(o) {
+    buildWidget("w-conditions",   o.conditions);
+    buildWidget("w-treatments",   o.treatments);
+    buildWidget("w-sample-types", o.sample_types);
+    buildWidget("w-timepoints",   o.timepoints);
+    buildWidget("w-sexes",        o.sexes);
+  });
+
+  $("#btn-run").click(function() {
+    const p = new URLSearchParams();
+    getSelected("w-conditions").forEach(v   => p.append("conditions[]",   v));
+    getSelected("w-treatments").forEach(v   => p.append("treatments[]",   v));
+    getSelected("w-sample-types").forEach(v => p.append("sample_types[]", v));
+    getSelected("w-timepoints").forEach(v   => p.append("timepoints[]",   v));
+    getSelected("w-sexes").forEach(v        => p.append("sexes[]",        v));
+
+    $("#loading-overlay").addClass("show");
+    $("#stats-card,#figure-card,#warning-banner,#sample-summary").addClass("d-none");
+
+    $.getJSON(`/api/part3/?${p.toString()}`, function(data) {
+      $("#loading-overlay").removeClass("show");
+      $("#warning-banner").text(data.warning).removeClass("d-none");
+      $("#n-resp").text(data.n_subjects_resp);
+      $("#n-nonresp").text(data.n_subjects_nonresp);
+      $("#sample-summary").removeClass("d-none");
+
+      const tb = $("#stats-tbody").empty();
+      data.stats.forEach(r => {
+        const bs = r.bonferroni_sig === true || r.bonferroni_sig === "True";
+        const fs = r.fdr_sig === true || r.fdr_sig === "True";
+        const popLabel = r.population.replace(/_/g," ").replace(/\b\w/g,c=>c.toUpperCase());
+        const absR = Math.abs(parseFloat(r.effect_size_r || 0));
+        const rColor = absR > 0.5 ? "#c40025" : absR > 0.3 ? "#E8002D" :
+                       absR > 0.1 ? "#888899" : "#BBBBCC";
+        const rSize  = absR > 0.5 ? "fw-bold" : absR > 0.3 ? "fw-semibold" : "";
+        tb.append(`<tr>
+          <td><span class="badge" style="background:var(--red-lt);color:var(--red);">${r.timepoint}d</span></td>
+          <td>${r.population_label || r.population || popLabel}</td>
+          <td>${r.n_resp}</td>
+          <td>${r.n_nonresp}</td>
+          <td>${parseFloat(r.median_resp).toFixed(2)}%</td>
+          <td>${parseFloat(r.median_nonresp).toFixed(2)}%</td>
+          <td style="color:var(--muted);">${parseFloat(r.mean_raw_resp||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})} <span style="font-size:10px;color:#bbb;">(${parseFloat(r.mean_resp||0).toFixed(2)}%)</span></td>
+          <td style="color:var(--muted);">${parseFloat(r.mean_raw_nonresp||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})} <span style="font-size:10px;color:#bbb;">(${parseFloat(r.mean_nonresp||0).toFixed(2)}%)</span></td>
+          <td class="${rSize}" style="color:${rColor};">${parseFloat(r.effect_size_r || 0).toFixed(3)}</td>
+          <td style="color:var(--muted);">${parseFloat(r.p_value).toFixed(4)}</td>
+          <td class="${fs ? "fw-bold" : ""}" style="${fs ? "color:var(--red);" : ""}">${parseFloat(r.fdr_p).toFixed(4)}</td>
+          <td>${stars(parseFloat(r.fdr_p))}</td>
+          <td style="color:var(--muted);font-size:11px;">${parseFloat(r.bonferroni_p).toFixed(4)}</td>
+          <td style="font-size:11px;">${stars(parseFloat(r.bonferroni_p))}</td>
+        </tr>`);
+      });
+      $("#stats-card").removeClass("d-none");
+      $("#boxplot-img").attr("src", "data:image/png;base64," + data.figure);
+      $("#figure-card").removeClass("d-none");
+    }).fail(function(xhr) {
+      $("#loading-overlay").removeClass("show");
+      alert("Error: " + (xhr.responseJSON ? xhr.responseJSON.error : "Unknown error"));
+    });
+  });
+
+  $("#btn-reset").click(function() {
+    document.querySelectorAll("[id^='w-'] .btn").forEach(b => {
+      b.classList.remove("active-filter");
+    });
+    $("#stats-card,#figure-card,#warning-banner,#sample-summary").addClass("d-none");
+  });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CytoDash — {% block title %}{% endblock %}</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --red:     #E8002D;
+      --red-lt:  #fff0f2;
+      --sidebar: #F7F7F9;
+      --border:  #E4E4EC;
+      --muted:   #888899;
+      --text:    #1A1A2E;
+      --text-sm: #555566;
+      --white:   #FFFFFF;
+      --hover:   #FFF0F2;
+      --card-sh: 0 1px 6px rgba(0,0,0,0.07);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 0;
+      background: #F2F2F6;
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      font-size: 14px;
+    }
+
+    /* ── Sidebar ─────────────────────────────────────────── */
+    #sidebar {
+      position: fixed; top: 0; left: 0;
+      width: 220px; height: 100vh;
+      background: var(--white);
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      z-index: 100; overflow-y: auto;
+    }
+    .sidebar-logo {
+      padding: 18px 20px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .sidebar-logo .logo-icon {
+      width: 30px; height: 30px;
+      background: var(--red); border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .sidebar-logo .logo-icon svg { width: 16px; height: 16px; stroke: #fff; fill: none; }
+    .sidebar-logo .logo-text { font-weight: 700; font-size: 15px; color: var(--text); }
+    .sidebar-section {
+      padding: 16px 16px 4px;
+      font-size: 10px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 1px;
+      color: var(--muted);
+    }
+    .nav-item-side {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 16px; margin: 1px 8px;
+      border-radius: 6px;
+      color: var(--text-sm); text-decoration: none;
+      font-size: 13.5px;
+      transition: background 0.15s, color 0.15s;
+    }
+    .nav-item-side:hover { background: var(--hover); color: var(--red); }
+    .nav-item-side.active { background: var(--red-lt); color: var(--red); font-weight: 600; }
+    .nav-item-side svg {
+      width: 16px; height: 16px; flex-shrink: 0;
+      stroke: var(--muted); fill: none; stroke-width: 1.75;
+      transition: stroke 0.15s;
+    }
+    .nav-item-side:hover svg,
+    .nav-item-side.active svg { stroke: var(--red); }
+    .sidebar-footer {
+      margin-top: auto; padding: 14px 16px;
+      border-top: 1px solid var(--border);
+      font-size: 11px; color: var(--muted);
+    }
+
+    /* ── Main ────────────────────────────────────────────── */
+    #main { margin-left: 220px; min-height: 100vh; padding: 28px 32px; }
+
+    /* ── Cards ───────────────────────────────────────────── */
+    .card {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: 10px; box-shadow: var(--card-sh);
+    }
+    .card-header {
+      background: var(--white); border-bottom: 1px solid var(--border);
+      border-radius: 10px 10px 0 0 !important;
+      font-weight: 600; font-size: 13px;
+      color: var(--text); padding: 12px 16px;
+    }
+    .card-body { padding: 16px; }
+
+    /* ── Stat cards ──────────────────────────────────────── */
+    .stat-card { text-align: center; padding: 20px 16px; }
+    .stat-card .number { font-size: 2rem; font-weight: 700; color: var(--red); line-height: 1.1; }
+    .stat-card .label  { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; margin-top: 4px; }
+
+    /* ── Section title ───────────────────────────────────── */
+    .section-title {
+      font-size: 20px; font-weight: 700; color: var(--text);
+      margin-bottom: 20px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    /* ── Buttons ─────────────────────────────────────────── */
+    .btn-teiko { background: var(--red); border-color: var(--red); color: #fff; font-size: 13px; }
+    .btn-teiko:hover { background: #c40025; border-color: #c40025; color: #fff; }
+    .btn-outline-teiko { border: 1px solid var(--border); color: var(--text-sm); background: var(--white); font-size: 12px; }
+    .btn-outline-teiko:hover { border-color: var(--red); color: var(--red); }
+    .btn-outline-teiko.active-filter { background: var(--red-lt); border-color: var(--red); color: var(--red); font-weight: 600; }
+
+    /* ── Tables ──────────────────────────────────────────── */
+    .table { color: var(--text); font-size: 13px; }
+    .table thead th { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; border-color: var(--border); font-weight: 600; }
+    .table td { border-color: var(--border); vertical-align: middle; }
+    .table-striped>tbody>tr:nth-of-type(odd)>* { background: #FAFAFC; }
+    .table-hover>tbody>tr:hover>* { background: var(--hover); }
+    .dataTables_wrapper .dataTables_paginate .paginate_button { color: var(--text) !important; border-radius: 4px; }
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current,
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
+      background: var(--red) !important; border-color: var(--red) !important;
+      color: #fff !important; border-radius: 4px; }
+    .dataTables_wrapper .dataTables_paginate .paginate_button:not(.current):hover {
+      background: var(--red-lt) !important; border-color: var(--border) !important;
+      color: var(--red) !important; }
+    .dataTables_wrapper .dataTables_info,
+    .dataTables_wrapper .dataTables_length { color: var(--muted); font-size: 12px; }
+
+    /* ── Progress bars ───────────────────────────────────── */
+    .pop-progress { height: 4px; background: #EEEEF5; border-radius: 2px; margin-top: 4px; }
+    .pop-progress-fill { height: 4px; background: var(--red); border-radius: 2px; transition: width 0.6s ease; }
+
+    /* ── Warning banner ──────────────────────────────────── */
+    .warning-banner { background: #FFF8E1; border-left: 3px solid #FFC107; padding: 10px 14px; border-radius: 4px; font-size: 12.5px; color: #555; }
+
+    /* ── Significance ────────────────────────────────────── */
+    .sig-star { color: var(--red); font-weight: 700; }
+    .sig-ns   { color: var(--muted); }
+
+    /* ── Forms ───────────────────────────────────────────── */
+    .form-control, .form-select { font-size: 13px; border-color: var(--border); color: var(--text); }
+    .form-control:focus, .form-select:focus { border-color: var(--red); box-shadow: 0 0 0 2px rgba(232,0,45,0.12); }
+    .form-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 5px; }
+
+    /* ── List group ──────────────────────────────────────── */
+    .list-group-item { border-color: var(--border); color: var(--text); }
+    .list-group-item-action:hover { background: var(--hover); color: var(--red); }
+    .list-group-item-action svg { stroke: var(--muted); }
+    .list-group-item-action:hover svg { stroke: var(--red); }
+
+    /* ── Module cards (index page) ───────────────────────── */
+    .module-icon {
+      width: 34px; height: 34px; border-radius: 8px;
+      background: var(--red-lt);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .module-icon svg { width: 18px; height: 18px; stroke: var(--red); fill: none; stroke-width: 1.75; }
+
+    /* ── Metric accent ───────────────────────────────────── */
+    .metric-accent { border-left: 4px solid var(--red) !important; }
+
+    /* ── Loading overlay ─────────────────────────────────── */
+    #loading-overlay {
+      display: none; position: fixed; top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(255,255,255,0.85);
+      z-index: 9999; align-items: center; justify-content: center;
+    }
+    #loading-overlay.show { display: flex; }
+  </style>
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+<!-- Sidebar -->
+<div id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">
+      <!-- Teiko-style hexagon/molecule icon -->
+      <svg viewBox="0 0 24 24" stroke="#fff" fill="none" stroke-width="2">
+        <path d="M12 2L20 7V17L12 22L4 17V7L12 2Z"/>
+      </svg>
+    </div>
+    <div class="logo-text">CytoDash</div>
+  </div>
+
+  <div class="sidebar-section">Overview</div>
+  <a href="/" class="nav-item-side {% block n1 %}{% endblock %}">
+    <!-- home / grid icon -->
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    Dataset Overview
+  </a>
+
+  <div class="sidebar-section">Analysis</div>
+  <a href="/part2/" class="nav-item-side {% block n2 %}{% endblock %}">
+    <!-- table / list icon -->
+    <svg viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/><path d="M8 3v18"/></svg>
+    Frequencies
+  </a>
+  <a href="/part3/" class="nav-item-side {% block n3 %}{% endblock %}">
+    <!-- bar chart icon -->
+    <svg viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+    Statistics
+  </a>
+  <a href="/part4/" class="nav-item-side {% block n4 %}{% endblock %}">
+    <!-- filter / funnel icon -->
+    <svg viewBox="0 0 24 24"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/></svg>
+    Saved Analysis
+  </a>
+
+  <div class="sidebar-footer">
+    Clinical Trial Analysis<br>
+    <span style="color:var(--red);font-weight:600;">Scott Lewis, Ph.D.</span>
+  </div>
+</div>
+
+<!-- Loading overlay -->
+<div id="loading-overlay">
+  <div class="text-center">
+    <div class="spinner-border" style="color:var(--red);width:2.5rem;height:2.5rem;" role="status"></div>
+    <div class="mt-3 fw-semibold" style="color:var(--text-sm);">Generating analysis…</div>
+  </div>
+</div>
+
+<!-- Main content -->
+<div id="main">
+  {% block content %}{% endblock %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+{% block extra_scripts %}{% endblock %}
+</body>
+</html>

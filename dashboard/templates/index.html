@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% block title %}Overview{% endblock %}
+{% block n1 %}active{% endblock %}
+{% block content %}
+
+<div class="section-title">Dataset Overview</div>
+
+<!-- Stat cards -->
+<div class="row g-3 mb-4">
+  <div class="col-sm-6 col-md-3">
+    <div class="card stat-card">
+      <div class="number">{{ stats.n_projects }}</div>
+      <div class="label">Projects</div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-md-3">
+    <div class="card stat-card">
+      <div class="number">{{ stats.n_subjects }}</div>
+      <div class="label">Subjects</div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-md-3">
+    <div class="card stat-card">
+      <div class="number">{{ stats.n_samples }}</div>
+      <div class="label">Samples</div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-md-3">
+    <div class="card stat-card">
+      <div class="number">{{ stats.n_counts }}</div>
+      <div class="label">Cell Count Rows</div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <!-- Cell population cards with progress bars -->
+  <div class="col-md-6">
+    <div class="card h-100">
+      <div class="card-header">
+        Cell Populations
+        <span class="text-muted fw-normal ms-1" style="font-size:11px;">total cells across all samples</span>
+      </div>
+      <div class="card-body">
+        <div class="row g-3">
+          {% for pop in stats.pop_totals %}
+          <div class="col-12">
+            <div class="d-flex justify-content-between align-items-baseline mb-1">
+              <span class="fw-semibold" style="font-size:13px;">
+                {{ pop.name|title }}
+              </span>
+              <span style="font-size:12px; color:var(--muted);">
+                {{ pop.total }} cells
+              </span>
+            </div>
+            <div class="pop-progress">
+              <div class="pop-progress-fill" style="width: {{ pop.pct }}%;"></div>
+            </div>
+            <div style="font-size:11px; color:var(--muted); margin-top:2px;">
+              {{ pop.pct }}% of total
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Navigation cards -->
+  <div class="col-md-6">
+    <div class="card h-100">
+      <div class="card-header">Analysis Modules</div>
+      <div class="card-body p-0">
+        <div class="list-group list-group-flush" style="border-radius:0 0 10px 10px;">
+          <a href="/part2/" class="list-group-item list-group-item-action py-3 px-4">
+            <div class="d-flex justify-content-between align-items-center gap-3">
+              <div class="module-icon">
+                <svg viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/><path d="M8 3v18"/></svg>
+              </div>
+              <div class="flex-grow-1">
+                <div class="fw-semibold" style="font-size:13px;">Frequency Table</div>
+                <div style="font-size:12px;color:var(--muted);margin-top:2px;">Relative frequency per population per sample · Interactive DataTable</div>
+              </div>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M9 18l6-6-6-6" stroke="var(--red)"/></svg>
+            </div>
+          </a>
+          <a href="/part3/" class="list-group-item list-group-item-action py-3 px-4">
+            <div class="d-flex justify-content-between align-items-center gap-3">
+              <div class="module-icon">
+                <svg viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+              </div>
+              <div class="flex-grow-1">
+                <div class="fw-semibold" style="font-size:13px;">Statistical Analysis</div>
+                <div style="font-size:12px;color:var(--muted);margin-top:2px;">Responders vs non-responders · Dynamic filters · Bonferroni + FDR</div>
+              </div>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M9 18l6-6-6-6" stroke="var(--red)"/></svg>
+            </div>
+          </a>
+          <a href="/part4/" class="list-group-item list-group-item-action py-3 px-4">
+            <div class="d-flex justify-content-between align-items-center gap-3">
+              <div class="module-icon">
+                <svg viewBox="0 0 24 24"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/></svg>
+              </div>
+              <div class="flex-grow-1">
+                <div class="fw-semibold" style="font-size:13px;">Saved Analysis</div>
+                <div style="font-size:12px;color:var(--muted);margin-top:2px;">Melanoma · Miraclib · PBMC · Baseline characterization</div>
+              </div>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M9 18l6-6-6-6" stroke="var(--red)"/></svg>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

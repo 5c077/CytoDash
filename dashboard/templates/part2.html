@@ -1,0 +1,333 @@
+{% extends "base.html" %}
+{% block title %}Frequencies{% endblock %}
+{% block n2 %}active{% endblock %}
+{% block content %}
+
+<div class="section-title">Cell Population Relative Frequencies</div>
+
+<!-- Filter panel -->
+<div class="card mb-3" id="filter-panel">
+  <div class="card-header d-flex justify-content-between align-items-center"
+       style="cursor:pointer;" onclick="toggleFilters()">
+    <span>Analysis Filters</span>
+    <svg id="filter-chevron" viewBox="0 0 24 24" fill="none" stroke="var(--muted)"
+         stroke-width="2" width="16" height="16" style="transition:transform 0.2s;">
+      <path d="M18 15l-6-6-6 6"/>
+    </svg>
+  </div>
+  <div id="filter-body" class="card-body">
+    <div class="row g-4 mb-3">
+
+      <!-- Population -->
+      <div class="col-md-2">
+        <div class="filter-group-label">Population</div>
+        <div class="filter-select-all">
+          <label class="checkbox-label">
+            <input type="checkbox" class="select-all" data-group="pop"> Select All
+          </label>
+        </div>
+        <div id="fg-pop">
+          {% for pop in populations %}
+          <label class="checkbox-label">
+            <input type="checkbox" class="filter-cb" data-group="pop" value="{{ pop.value }}">
+            {{ pop.label }}
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Response -->
+      <div class="col-md-2">
+        <div class="filter-group-label">Response</div>
+        <div class="filter-select-all">
+          <label class="checkbox-label">
+            <input type="checkbox" class="select-all" data-group="resp"> Select All
+          </label>
+        </div>
+        <div id="fg-resp"></div>
+      </div>
+
+      <!-- Sex -->
+      <div class="col-md-1">
+        <div class="filter-group-label">Sex</div>
+        <div class="filter-select-all">
+          <label class="checkbox-label">
+            <input type="checkbox" class="select-all" data-group="sex"> Select All
+          </label>
+        </div>
+        <div id="fg-sex"></div>
+      </div>
+
+      <!-- Condition -->
+      <div class="col-md-2">
+        <div class="filter-group-label">Condition</div>
+        <div class="filter-select-all">
+          <label class="checkbox-label">
+            <input type="checkbox" class="select-all" data-group="cond"> Select All
+          </label>
+        </div>
+        <div id="fg-cond"></div>
+      </div>
+
+      <!-- Treatment -->
+      <div class="col-md-2">
+        <div class="filter-group-label">Treatment</div>
+        <div class="filter-select-all">
+          <label class="checkbox-label">
+            <input type="checkbox" class="select-all" data-group="trt"> Select All
+          </label>
+        </div>
+        <div id="fg-trt"></div>
+      </div>
+
+      <!-- Sample Type -->
+      <div class="col-md-1">
+        <div class="filter-group-label">Sample Type</div>
+        <div class="filter-select-all">
+          <label class="checkbox-label">
+            <input type="checkbox" class="select-all" data-group="stype"> Select All
+          </label>
+        </div>
+        <div id="fg-stype"></div>
+      </div>
+
+      <!-- Timepoint -->
+      <div class="col-md-2">
+        <div class="filter-group-label">Timepoint (days)</div>
+        <div class="filter-select-all">
+          <label class="checkbox-label">
+            <input type="checkbox" class="select-all" data-group="tp"> Select All
+          </label>
+        </div>
+        <div id="fg-tp"></div>
+      </div>
+
+    </div>
+
+    <!-- Sample ID search -->
+    <div class="row g-2 align-items-end mb-3">
+      <div class="col-md-3">
+        <label class="form-label">Sample ID contains</label>
+        <input type="text" id="filter-sample" class="form-control form-control-sm" placeholder="search…">
+      </div>
+    </div>
+
+    <!-- Action row -->
+    <div class="d-flex justify-content-between align-items-center pt-2"
+         style="border-top:1px solid var(--border);">
+      <span id="filter-summary" style="font-size:12px;color:var(--muted);">No filters selected</span>
+      <div class="d-flex gap-2">
+        <button id="btn-clear" class="btn btn-outline-teiko btn-sm">Clear All</button>
+        <button id="btn-apply" class="btn btn-teiko btn-sm">Apply Filters</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Results table -->
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <span>Results</span>
+    <span id="row-count" class="px-2 py-1 rounded"
+          style="background:var(--red-lt);color:var(--red);font-size:11px;font-weight:600;">…</span>
+  </div>
+  <div class="card-body p-0">
+    <table id="freq-table" class="table table-sm table-striped table-hover w-100 mb-0">
+      <thead>
+        <tr>
+          <th>Sample</th>
+          <th>Total Count</th>
+          <th>Population</th>
+          <th>Count</th>
+          <th>%</th>
+          <th>Response</th>
+          <th>Sex</th>
+          <th>Condition</th>
+          <th>Sample Type</th>
+          <th>Timepoint</th>
+        </tr>
+      </thead>
+    </table>
+  </div>
+</div>
+
+<style>
+.filter-group-label {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.6px; color: var(--text); margin-bottom: 8px;
+}
+.filter-select-all { margin-bottom: 4px; }
+.checkbox-label {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12.5px; color: var(--text-sm);
+  margin-bottom: 4px; cursor: pointer;
+  user-select: none;
+}
+.checkbox-label input[type="checkbox"] {
+  accent-color: var(--red); width: 13px; height: 13px; cursor: pointer;
+}
+</style>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// ── Filter state ─────────────────────────────────────────────────────────────
+const state = {
+  pop: [], resp: [], sex: [], cond: [], trt: [], stype: [], tp: [], sample: ""
+};
+
+// ── Build checkbox groups from API ───────────────────────────────────────────
+const POP_LABELS = {
+  b_cell:"B Cell", cd4_t_cell:"CD4+ T Cell", cd8_t_cell:"CD8+ T Cell",
+  monocyte:"Monocyte", nk_cell:"NK Cell"
+};
+
+function buildGroup(containerId, values, group) {
+  const c = document.getElementById(containerId);
+  c.innerHTML = "";
+  values.forEach(v => {
+    const label = document.createElement("label");
+    label.className = "checkbox-label";
+    label.innerHTML = `<input type="checkbox" class="filter-cb" data-group="${group}" value="${v}">
+                       ${POP_LABELS[v] || v}`;
+    c.appendChild(label);
+  });
+}
+
+$.getJSON("/api/filter-options/", function(o) {
+  buildGroup("fg-resp",  [...o.responses || [], "NA"], "resp");
+  buildGroup("fg-sex",   o.sexes,        "sex");
+  buildGroup("fg-cond",  o.conditions,   "cond");
+  buildGroup("fg-trt",   o.treatments,   "trt");
+  buildGroup("fg-stype", o.sample_types, "stype");
+  buildGroup("fg-tp",    o.timepoints.map(String), "tp");
+});
+
+// Fetch response values separately since filter-options doesn't include them
+$.getJSON("/api/filter-options/", function(o) {
+  // responses not in filter-options — build from known values
+  const respVals = ["yes", "no", "NA"];
+  const respLabels = {yes:"Responder", no:"Non-Responder", NA:"N/A"};
+  const c = document.getElementById("fg-resp");
+  c.innerHTML = "";
+  respVals.forEach(v => {
+    const label = document.createElement("label");
+    label.className = "checkbox-label";
+    label.innerHTML = `<input type="checkbox" class="filter-cb" data-group="resp" value="${v}">
+                       ${respLabels[v] || v}`;
+    c.appendChild(label);
+  });
+});
+
+// ── Select All logic ──────────────────────────────────────────────────────────
+document.addEventListener("change", function(e) {
+  if (e.target.classList.contains("select-all")) {
+    const group = e.target.dataset.group;
+    document.querySelectorAll(`.filter-cb[data-group="${group}"]`).forEach(cb => {
+      cb.checked = e.target.checked;
+    });
+  }
+  if (e.target.classList.contains("filter-cb")) {
+    const group = e.target.dataset.group;
+    const all   = document.querySelectorAll(`.filter-cb[data-group="${group}"]`);
+    const sa    = document.querySelector(`.select-all[data-group="${group}"]`);
+    if (sa) sa.checked = Array.from(all).every(cb => cb.checked);
+  }
+  updateFilterSummary();
+});
+
+function updateFilterSummary() {
+  const total = document.querySelectorAll(".filter-cb:checked").length;
+  const el = document.getElementById("filter-summary");
+  el.textContent = total > 0 ? `${total} filter${total>1?"s":""} selected` : "No filters selected";
+  el.style.color = total > 0 ? "var(--red)" : "var(--muted)";
+}
+
+// ── Toggle filter panel ───────────────────────────────────────────────────────
+let filterOpen = true;
+function toggleFilters() {
+  filterOpen = !filterOpen;
+  document.getElementById("filter-body").style.display = filterOpen ? "" : "none";
+  document.getElementById("filter-chevron").style.transform =
+    filterOpen ? "" : "rotate(180deg)";
+}
+
+// ── Build DataTables URL ──────────────────────────────────────────────────────
+function buildUrl(start, length, draw) {
+  const p = new URLSearchParams();
+  p.set("draw",   draw);
+  p.set("start",  start);
+  p.set("length", length);
+
+  state.pop.forEach(v   => p.append("populations[]",  v));
+  state.resp.forEach(v  => p.append("responses[]",    v));
+  state.sex.forEach(v   => p.append("sexes[]",        v));
+  state.cond.forEach(v  => p.append("conditions[]",   v));
+  state.trt.forEach(v   => p.append("treatments[]",   v));
+  state.stype.forEach(v => p.append("sample_types[]", v));
+  state.tp.forEach(v    => p.append("timepoints[]",   v));
+  if (state.sample)      p.set("sample", state.sample);
+
+  return `/api/part2/?${p.toString()}`;
+}
+
+// ── DataTable init ────────────────────────────────────────────────────────────
+const RESP_LABELS = {yes:"Responder", no:"Non-Responder", NA:"N/A"};
+
+const table = $("#freq-table").DataTable({
+  processing: true,
+  serverSide: true,
+  ajax: function(d, cb) {
+    $.getJSON(buildUrl(d.start, d.length, d.draw), function(r) {
+      cb(r);
+      $("#row-count").text(r.recordsFiltered.toLocaleString() + " rows");
+    });
+  },
+  columns: [
+    {title:"Sample"},
+    {title:"Total Count",  render: d => parseInt(d).toLocaleString()},
+    {title:"Population",   render: d => POP_LABELS[d] || d},
+    {title:"Count",        render: d => parseInt(d).toLocaleString()},
+    {title:"%",            render: d => `<span style="color:var(--red);font-weight:600;">${parseFloat(d).toFixed(2)}%</span>`},
+    {title:"Response",     render: d => RESP_LABELS[d] || d || "—"},
+    {title:"Sex",          render: d => d || "—"},
+    {title:"Condition",    render: d => d ? d.charAt(0).toUpperCase()+d.slice(1) : "—"},
+    {title:"Sample Type",  render: d => d || "—"},
+    {title:"Timepoint",    render: d => d !== null && d !== undefined ? `${d}d` : "—"},
+  ],
+  pageLength: 25,
+  order: [[0, "asc"]],
+  dom: "lrtip",
+});
+
+// ── Apply / Clear ─────────────────────────────────────────────────────────────
+document.getElementById("btn-apply").addEventListener("click", function() {
+  const get = group => Array.from(
+    document.querySelectorAll(`.filter-cb[data-group="${group}"]:checked`)
+  ).map(cb => cb.value);
+
+  state.pop   = get("pop");
+  state.resp  = get("resp");
+  state.sex   = get("sex");
+  state.cond  = get("cond");
+  state.trt   = get("trt");
+  state.stype = get("stype");
+  state.tp    = get("tp");
+  state.sample = document.getElementById("filter-sample").value;
+
+  table.ajax.reload();
+});
+
+document.getElementById("btn-clear").addEventListener("click", function() {
+  document.querySelectorAll(".filter-cb, .select-all").forEach(cb => cb.checked = false);
+  document.getElementById("filter-sample").value = "";
+  Object.keys(state).forEach(k => { state[k] = Array.isArray(state[k]) ? [] : ""; });
+  updateFilterSummary();
+  table.ajax.reload();
+});
+
+document.getElementById("filter-sample").addEventListener("keypress", function(e) {
+  if (e.which === 13) document.getElementById("btn-apply").click();
+});
+</script>
+{% endblock %}
