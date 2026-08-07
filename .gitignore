@@ -1,0 +1,6 @@
+.venv_test/
+.snakemake/
+clinical_trial.db
+__pycache__/
+*.pyc
+.DS_Store
