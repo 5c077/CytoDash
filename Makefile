@@ -17,7 +17,7 @@ setup:
 #   2. snakemake       — orchestrate Parts 2, 3, 4 via DAG
 pipeline:
 	python load_data.py
-	snakemake --cores 1 --snakefile Snakefile
+	python -m snakemake --cores 1 --snakefile Snakefile
 
 # ── dashboard: Start interactive dashboard server ────────────────────────────
 dashboard:
