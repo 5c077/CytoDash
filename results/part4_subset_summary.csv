@@ -1,0 +1,8 @@
+section,project,n_samples,response,n_subjects,sex,avg_b_cell
+4.1_samples_per_project,prj1,384.0,,,,
+4.1_samples_per_project,prj3,272.0,,,,
+4.2_subjects_by_response,,,no,325.0,,
+4.2_subjects_by_response,,,yes,331.0,,
+4.3_subjects_by_sex,,,,312.0,F,
+4.3_subjects_by_sex,,,,344.0,M,
+saved_answer,,,,,,10206.15
