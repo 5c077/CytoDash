@@ -1,6 +1,6 @@
 # CytoDash
 
-Dashboard for Clinical Trial Immune Cell Population Analysis
+Clinical Trial Immune Cell Population Analysis Dashboard
 
 ---
 
