@@ -15,10 +15,10 @@ RESULTS = "results"
 # ── Target: all pipeline outputs ──────────────────────────────────────────────
 rule all:
     input:
-        f"{RESULTS}/part2_frequency_table.csv",
-        f"{RESULTS}/part3_statistical_results.csv",
-        f"{RESULTS}/part3_boxplots",
-        f"{RESULTS}/part4_subset_summary.csv",
+        "results/part2_frequency_table.csv",
+        "results/part3_statistical_results.csv",
+        "results/part3_boxplots",
+        "results/part4_subset_summary.csv",
 
 
 # ── Rule 1: Initialize database and load data ─────────────────────────────────
@@ -38,7 +38,7 @@ rule analyze_frequency:
     input:
         db = "clinical_trial.db"
     output:
-        table = f"{RESULTS}/part2_frequency_table.csv"
+        table = "results/part2_frequency_table.csv"
     message:
         "Part 2: Computing relative cell population frequencies per sample"
     shell:
@@ -49,9 +49,9 @@ rule analyze_frequency:
 rule analyze_statistics:
     input:
         db    = "clinical_trial.db",
-        freq  = f"{RESULTS}/part2_frequency_table.csv"
+        freq  = "/part2_frequency_table.csv"
     output:
-        stats    = f"{RESULTS}/part3_statistical_results.csv",
+        stats    = "results/part3_statistical_results.csv",
         boxplots = directory(f"{RESULTS}/part3_boxplots")
     message:
         "Part 3: Statistical comparison — responders vs non-responders "
@@ -65,7 +65,7 @@ rule analyze_subset:
     input:
         db = "clinical_trial.db"
     output:
-        summary = f"{RESULTS}/part4_subset_summary.csv"
+        summary = "results/part4_subset_summary.csv"
     message:
         "Part 4: Subset analysis — melanoma PBMC baseline miraclib samples"
     shell:
