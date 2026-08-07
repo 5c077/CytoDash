@@ -100,9 +100,9 @@ The schema scales to hundreds of projects and thousands of samples without struc
 Snakemake DSL orchestrates five stages as a dependency graph. `make pipeline` calls `python load_data.py` first (supporting root-level execution), then `snakemake --cores 1` executes the remaining stages:
 
 - `load_data.py` → `clinical_trial.db`
-- `analyze_frequency.py` — Frequency table (window function SQL)
-- `analyze_statistics.py` — Per-timepoint Mann-Whitney w/ correction
-- `analyze_subset.py` — Sample background characterization
+- `analyze_frequency.py`: Frequency table (window function SQL)
+- `analyze_statistics.py`: Per-timepoint Mann-Whitney w/ correction
+- `analyze_subset.py`: Sample background characterization
 
 ### Statistical Methodology
 
