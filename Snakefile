@@ -42,9 +42,7 @@ rule analyze_frequency:
     message:
         "Part 2: Computing relative cell population frequencies per sample"
     shell:
-        "python scripts/analyze_frequency.py "
-        "--db {input.db} "
-        "--out {output.table}"
+        "python scripts/analyze_frequency.py --db {input.db} --out {output.table}"
 
 
 # ── Rule 3: Statistical analysis — responders vs non-responders (Part 3) ──────
@@ -59,11 +57,7 @@ rule analyze_statistics:
         "Part 3: Statistical comparison — responders vs non-responders "
         "(melanoma, miraclib, PBMC, per timepoint)"
     shell:
-        "python scripts/analyze_statistics.py "
-        "--db {input.db} "
-        "--freq {input.freq} "
-        "--out_stats {output.stats} "
-        "--out_plots {output.boxplots}"
+        "python scripts/analyze_statistics.py --db {input.db} --freq {input.freq} --out_stats {output.stats} --out_plots {output.boxplots}"
 
 
 # ── Rule 4: Subset analysis (Part 4) ─────────────────────────────────────────
@@ -75,6 +69,4 @@ rule analyze_subset:
     message:
         "Part 4: Subset analysis — melanoma PBMC baseline miraclib samples"
     shell:
-        "python scripts/analyze_subset.py "
-        "--db {input.db} "
-        "--out {output.summary}"
+        "python scripts/analyze_subset.py --db {input.db} --out {output.summary}"
