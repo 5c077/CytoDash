@@ -10,8 +10,6 @@
 # because it must run from the repo root without arguments per specification.
 # The load_data rule below allows snakemake to track the DB as a dependency.
 
-RESULTS = "results"
-
 # ── Target: all pipeline outputs ──────────────────────────────────────────────
 rule all:
     input:
