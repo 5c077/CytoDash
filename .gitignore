@@ -1,6 +1,7 @@
 .venv_test/
 .snakemake/
+.snakemake*
 clinical_trial.db
 __pycache__/
 *.pyc
-.DS_Store
+.DS_Store.snakemake_timestamp
