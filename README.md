@@ -10,7 +10,7 @@ Dashboard for Clinical Trial Immune Cell Population Analysis
 
 ```bash
 # 1. Clone and install
-git clone https://github.com/5c077/CytoDash.git && cd cytodash
+git clone https://github.com/5c077/CytoDash.git && cd CytoDash
 make setup
 
 # 2. Run full pipeline (initializes DB, loads data, generates all outputs)
