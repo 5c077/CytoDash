@@ -77,7 +77,7 @@ CREATE TABLE IF NOT EXISTS samples (
     time_from_treatment_start INTEGER
 );
 
--- Cell counts: long format — one row per population per sample
+-- Cell counts: long format (one row per population per sample)
 -- 5 rows per sample = 52,500 total rows
 -- Long format allows new populations without schema changes (scalability)
 CREATE TABLE IF NOT EXISTS cell_counts (
