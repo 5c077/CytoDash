@@ -128,7 +128,7 @@ CytoDash is a single-file Django application (`dashboard/app.py`) configured pro
 
 ## Workflow
 
-Development was accelerated through the use of AI tools. Below is the division of responsibility, emphasizing intentional review of AI for procedural tasks:
+Development was accelerated through the use of AI tools. Below is the division of responsibility, emphasizing intentional review of AI output for procedural tasks:
 
 | Component | AI Role | Author Role |
 |---|---|---|
