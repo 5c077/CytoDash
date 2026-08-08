@@ -35,7 +35,7 @@ make dashboard        # http://localhost:8000
 ## Repository Core Structure
 
 ```
-cytodash/
+CytoDash/
 ├── Makefile                  # setup · pipeline · dashboard targets
 ├── Snakefile                 # DAG: load → frequency → statistics → subset
 ├── requirements.txt
