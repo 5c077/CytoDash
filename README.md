@@ -56,8 +56,6 @@ CytoDash/
     └── templates/            # base · index · part2 · part3 · part4
 ```
 
----
-
 ## Database Schema
 
 The schema normalizes `cell-count.csv` into four tables following the third normal form (3NF) rule. Subject demographic attributes (condition, age, sex, treatment, response) are stored once in `subjects` rather than repeated per sample row, eliminating update anomalies. Cell population counts use a **long format** (one row per population per sample) so new markers can be added without major schema alterations.
@@ -90,8 +88,6 @@ The schema scales to hundreds of projects and thousands of samples without struc
 ### Idempotency
 
 `load_data.py` uses `INSERT OR IGNORE` throughout and removes any existing database file before reloading, ensuring `make pipeline` is safe to re-run without the risk of data duplication.
-
----
 
 ## Code Structure & Design
 
