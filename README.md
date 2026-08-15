@@ -128,18 +128,7 @@ CytoDash is a single-file Django application (`dashboard/app.py`) configured pro
 
 ## Workflow
 
-Development was accelerated through the use of AI tools. Below is the division of responsibility, emphasizing intentional review of AI output for procedural tasks:
-
-| Component | AI Role | Author Role |
-|---|---|---|
-| Snakemake DSL skeleton | Boilerplate & process templates | Stage logic, parameter choices |
-| Statistical scaffolding | Test patterns, correction API | Test selection, correction strategy |
-| Django dashboard | Template structure, AJAX patterns | Architecture, UX design, all filtering logic |
-| Figure generation | matplotlib/GridSpec patterns | Visual design, layout decisions |
-| Biological interpretation | — | 100% author-defined |
-| Schema design | — | 100% author-defined |
-
----
+Development was accelerated through the use of AI tools.
 
 ## Dashboard
 
