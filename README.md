@@ -124,8 +124,6 @@ CytoDash is a single-file Django application (`dashboard/app.py`) configured pro
 - **Statistical disclaimer**: arbitrary user-defined subsets inflate Type I error beyond reported corrections. A warning banner makes this explicit with every analysis run.
 - **Collaborative design language**: light theme, red accent (#E8002D), left sidebar navigation, and SVG line icons are aligned with a great product aesthetic.
 
----
-
 ## Workflow
 
 Development was accelerated through the use of AI tools.
@@ -134,4 +132,4 @@ Development was accelerated through the use of AI tools.
 
 Start the dashboard locally with `make dashboard`, then navigate to `http://localhost:8000`.
 
-The dashboard requires `clinical_trial.db` to be present in the repository root. Run `make pipeline` first if the database does not exist.
+The dashboard requires the database to be present in the repository root. Run `make pipeline` first if the database does not exist.
